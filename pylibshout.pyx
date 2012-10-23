@@ -21,10 +21,10 @@ cdef extern from "shout/shout.h":
     
     int shout_open(shout_t *self)
     int shout_close(shout_t *self)
-    int shout_send(shout_t *self, unsigned char *data, size_t len)
-    ssize_t shout_send_raw(shout_t *self, unsigned char *data, size_t len)
+    int shout_send(shout_t *self, unsigned char *data, size_t len) nogil
+    ssize_t shout_send_raw(shout_t *self, unsigned char *data, size_t len) nogil
     ssize_t shout_queuelen(shout_t *self)
-    void shout_sync(shout_t *self)
+    void shout_sync(shout_t *self) nogil
     int shout_delay(shout_t *self)
 
     #properties:
@@ -142,8 +142,9 @@ cdef class Shout:
             raise ShoutException(self.get_errno(), self.get_error())
 
     def send(self, data):
+        length = len(data)
         with nogil:
-            i = shout_send(self.shout_t, data, len(data))
+            i = shout_send(self.shout_t, data, length)
         if i < 0:
             raise ShoutException(self.get_errno(), self.get_error())
         return i
@@ -152,8 +153,9 @@ cdef class Shout:
         """Send unparsed data to the server.  Do not use this unless you 
         know what you are doing. 
         Returns the number of bytes written, or < 0 on error."""
+        length = len(data)
         with nogil:
-            i = shout_send_raw(self.shout_t, data, len(data))
+            i = shout_send_raw(self.shout_t, data, length)
         if i < 0:
             raise ShoutException(self.get_errno(), self.get_error())
         return i

@@ -130,14 +130,15 @@ cdef class Shout:
     cdef shout_metadata_t *shout_metadata_t
     __audio_info = {}
     __metadata = {}
-    __charset = 'utf-8'
+    cdef str __charset
     
     def __init__(self):
         """initializes the shout library. Must be called before anything else"""
         shout_init()
         self.shout_t = shout_new()
         self.shout_metadata_t = shout_metadata_new()
-
+        self.__charset = 'utf-8'
+        
     def open(self):
         """shout_open (no switching back and forth midstream at the moment)."""
         i = shout_open(self.shout_t)
@@ -397,10 +398,10 @@ cdef class Shout:
    
     property charset:
         """Charset to use for metadata encoding"""
-        def __get__(self):
+        def __get__(Shout self):
             return self.__charset
         
-        def __set__(self, charset):
+        def __set__(Shout self, charset):
             try:
                 codecs.lookup(charset)
             except (codecs.LookupError):

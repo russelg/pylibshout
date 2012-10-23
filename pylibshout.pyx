@@ -130,7 +130,8 @@ cdef class Shout:
     cdef shout_metadata_t *shout_metadata_t
     __audio_info = {}
     __metadata = {}
-
+    __charset = 'utf-8'
+    
     def __init__(self):
         """initializes the shout library. Must be called before anything else"""
         shout_init()

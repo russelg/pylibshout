@@ -1,4 +1,6 @@
 import sys
+import codecs
+
 
 cdef extern from "sys/types.h":
     ctypedef unsigned int size_t
@@ -376,10 +378,15 @@ cdef class Shout:
             return self.__metadata
 
         def __set__(self, dict):
+            if not 'charset' in dict:
+                dict['charset'] = self.charset
             for key, value in dict.items():
-                value = str(value)
-                shout_metadata_add(self.shout_metadata_t, key, value)
                 self.__metadata[key] = value
+                if key == 'song' and isinstance(value, unicode):
+                    value = value.encode(self.charset)
+                else:
+                    value = str(value)
+                shout_metadata_add(self.shout_metadata_t, key, value)
 
             i = shout_set_metadata(self.shout_t, self.shout_metadata_t)
 
@@ -387,6 +394,18 @@ cdef class Shout:
             if i != 0:
                 raise ShoutException(i, 'Metadata is not correct')
    
+    property charset:
+        """Charset to use for metadata encoding"""
+        def __get__(self):
+            return self.__charset
+        
+        def __set__(self, charset):
+            try:
+                codecs.lookup(charset)
+            except (codecs.LookupError):
+                raise ShoutException(-50, 'Invalid charset')
+            self.__charset = charset
+            
     property public:
         "A doc string can go here."
 

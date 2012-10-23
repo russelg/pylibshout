@@ -97,7 +97,7 @@ SHOUTERR_BUSY = -10
 SHOUT_FORMAT_OGG = 0
 SHOUT_FORMAT_MP3 = 1
 #backward-compatibility alias
-SHOUT_FORMAT_VORBIS	= SHOUT_FORMAT_OGG
+SHOUT_FORMAT_VORBIS = SHOUT_FORMAT_OGG
 
 SHOUT_PROTOCOL_HTTP = 0
 SHOUT_PROTOCOL_XAUDIOCAST = 1
@@ -116,6 +116,9 @@ def version():
     cdef int *minor
     cdef int *patch
     return shout_version(major, minor, patch)
+
+class ShoutException(Exception):
+    pass
 
 cdef class Shout:
     """Allocates and sets up a new shout_t.  Returns NULL if it can't get 
@@ -136,43 +139,47 @@ cdef class Shout:
         """shout_open (no switching back and forth midstream at the moment)."""
         i = shout_open(self.shout_t)
         if i != 0:
-            raise Exception(self.get_errno(), self.get_error())
+            raise ShoutException(self.get_errno(), self.get_error())
 
     def send(self, data):
-        i = shout_send(self.shout_t, data, len(data))
-        if i != 0:
-            raise Exception(self.get_errno(), self.get_error())
-
+        with nogil:
+            i = shout_send(self.shout_t, data, len(data))
+        if i < 0:
+            raise ShoutException(self.get_errno(), self.get_error())
+        return i
+    
     def send_raw(self, data):
         """Send unparsed data to the server.  Do not use this unless you 
         know what you are doing. 
         Returns the number of bytes written, or < 0 on error."""
-        i = shout_send_raw(self.shout_t, data, len(data))
-        if i != 0:
-            raise Exception(self.get_errno(), self.get_error())
-
+        with nogil:
+            i = shout_send_raw(self.shout_t, data, len(data))
+        if i < 0:
+            raise ShoutException(self.get_errno(), self.get_error())
+        return i
+    
     def queuelen(self):
         """return the number of bytes currently on the write queue (only 
         makes sense in nonblocking mode)"""
         i = shout_queuelen(self.shout_t)
-        if i != 0:
-            raise Exception(self.get_errno(), self.get_error())
+        if i < 0:
+            raise ShoutException(self.get_errno(), self.get_error())
+        return i
 
     def sync(self):
         """Puts caller to sleep until it is time to send more data to the
         server"""
-        shout_sync(self.shout_t)
+        with nogil:
+            shout_sync(self.shout_t)
 
     def delay(self):
         """Amount of time in ms caller should wait before sending again"""
-        i = shout_delay(self.shout_t)
-        if i != 0:
-            raise Exception(self.get_errno(), self.get_error())
+        return shout_delay(self.shout_t)
 
     def close(self):
         i = shout_close(self.shout_t)
         if i != 0:
-            raise Exception(self.get_errno(), self.get_error())
+            raise ShoutException(self.get_errno(), self.get_error())
 
     def get_error(self):
         """Returns a statically allocated string describing the last shout error
@@ -207,7 +214,7 @@ cdef class Shout:
             host = str(host)
             i = shout_set_host(self.shout_t, host)
             if i != 0:
-                raise Exception(i, 'Host is not correct')
+                raise ShoutException(i, 'Host is not correct')
 
     property port:
         "A doc string can go here."
@@ -220,7 +227,7 @@ cdef class Shout:
             port = int(port)
             i = shout_set_port(self.shout_t, port)
             if i != 0:
-                raise Exception(i, 'Port is not correct')
+                raise ShoutException(i, 'Port is not correct')
 
     property user:
         "A doc string can go here."
@@ -232,7 +239,7 @@ cdef class Shout:
             user = str(user)
             i = shout_set_user(self.shout_t, user)
             if i != 0:
-                raise Exception(i, 'User is not correct')
+                raise ShoutException(i, 'User is not correct')
 
     property password:
         "A doc string can go here."
@@ -245,7 +252,7 @@ cdef class Shout:
             password = str(password)
             i = shout_set_password(self.shout_t, password)
             if i != 0:
-                raise Exception(i, 'password is not correct')
+                raise ShoutException(i, 'password is not correct')
 
     property mount:
         "A doc string can go here."
@@ -258,7 +265,7 @@ cdef class Shout:
             mount = str(mount)
             i = shout_set_mount(self.shout_t, mount)
             if i != 0:
-                raise Exception(i, 'mount is not correct')
+                raise ShoutException(i, 'mount is not correct')
 
     property name:
         "A doc string can go here."
@@ -270,7 +277,7 @@ cdef class Shout:
             name = str(name)
             i = shout_set_name(self.shout_t, name)
             if i != 0:
-                raise Exception(i, 'name is not correct')
+                raise ShoutException(i, 'name is not correct')
 
     property url:
         "A doc string can go here."
@@ -282,7 +289,7 @@ cdef class Shout:
             url = str(url)
             i = shout_set_url(self.shout_t, url)
             if i != 0:
-                raise Exception(i, 'url is not correct')
+                raise ShoutException(i, 'url is not correct')
 
     property genre:
         "A doc string can go here."
@@ -294,7 +301,7 @@ cdef class Shout:
             genre = str(genre)
             i = shout_set_genre(self.shout_t, genre)
             if i != 0:
-                raise Exception(i, 'genre is not correct')
+                raise ShoutException(i, 'genre is not correct')
 
     property agent:
         "A doc string can go here."
@@ -306,7 +313,7 @@ cdef class Shout:
             agent = str(agent)
             i = shout_set_agent(self.shout_t, agent)
             if i != 0:
-                raise Exception(i, 'Agent is not correct')
+                raise ShoutException(i, 'Agent is not correct')
 
     property description:
         "A doc string can go here."
@@ -318,7 +325,7 @@ cdef class Shout:
             description = str(description)
             i = shout_set_description(self.shout_t, description)
             if i != 0:
-                raise Exception(i, 'Description is not correct')
+                raise ShoutException(i, 'Description is not correct')
 
     property dumpfile:
         "A doc string can go here."
@@ -330,7 +337,7 @@ cdef class Shout:
             dumpfile = str(dumpfile)
             i = shout_set_dumpfile(self.shout_t, dumpfile)
             if i != 0:
-                raise Exception(i, 'Dumpfile is not correct')
+                raise ShoutException(i, 'Dumpfile is not correct')
 
     property audio_info:
         "A doc string can go here."
@@ -349,10 +356,10 @@ cdef class Shout:
                     i = shout_set_audio_info(self.shout_t, key, value)
                     self.__audio_info[key] = value
                 else:
-                    raise Exception('%s is not a valid audio_info attribute' % key)
+                    raise ShoutException('%s is not a valid audio_info attribute' % key)
 
             if i != 0:
-                raise Exception(i, 'Audio info is not correct')
+                raise ShoutException(i, 'Audio info is not correct')
 
     property metadata:
         """Sets MP3 metadata. Only key is now 'song' :S 
@@ -376,7 +383,7 @@ cdef class Shout:
 
             i = 0
             if i != 0:
-                raise Exception(i, 'Metadata is not correct')
+                raise ShoutException(i, 'Metadata is not correct')
    
     property public:
         "A doc string can go here."
@@ -388,7 +395,7 @@ cdef class Shout:
             public = bool(public)
             i = shout_set_dumpfile(self.shout_t, public)
             if i != 0:
-                raise Exception(i, 'Public is not correct')
+                raise ShoutException(i, 'Public is not correct')
 
     property format:
         "A doc string can go here."
@@ -400,7 +407,7 @@ cdef class Shout:
             format = int(format)
             i = shout_set_format(self.shout_t, format)
             if i != 0:
-                raise Exception(i, 'Format is not correct')
+                raise ShoutException(i, 'Format is not correct')
 
     property protocol:
         """takes a SHOUT_PROTOCOL_xxxxx argument"""
@@ -412,7 +419,7 @@ cdef class Shout:
             protocol = int(protocol)
             i = shout_set_protocol(self.shout_t, protocol)
             if i != 0:
-                raise Exception(i, 'Protocol is not correct')
+                raise ShoutException(i, 'Protocol is not correct')
 
     property nonblocking:
         "A doc string can go here."
@@ -424,4 +431,4 @@ cdef class Shout:
             nonblocking = int(nonblocking)
             i = shout_set_nonblocking(self.shout_t, nonblocking)
             if i != 0:
-                raise Exception(i, 'Nonblocking is not correct')
+                raise ShoutException(i, 'Nonblocking is not correct')

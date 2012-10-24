@@ -128,15 +128,18 @@ cdef class Shout:
     with shout_free."""
     cdef shout_t *shout_t
     cdef shout_metadata_t *shout_metadata_t
-    __audio_info = {}
-    __metadata = {}
     cdef str __charset
+    cdef dict __metadata
+    cdef dict __audio_info
     
     def __init__(self):
         """initializes the shout library. Must be called before anything else"""
         shout_init()
         self.shout_t = shout_new()
         self.shout_metadata_t = shout_metadata_new()
+        
+        self.__metadata = dict()
+        self.__audio_info = dict()
         self.__charset = 'utf-8'
         
     def open(self):
@@ -202,10 +205,10 @@ cdef class Shout:
         """returns SHOUTERR_CONNECTED or SHOUTERR_UNCONNECTED"""
         return shout_get_connected(self.shout_t)
 
-    def __del(self):
-        self.close()
-        shout_shutdown()
-
+    def __dealloc__(self):
+        shout_free(self.shout_t)
+        shout_metadata_free(self.shout_metadata_t)
+        
     """Parameter manipulation functions.  libshout makes copies of all 
     parameters, the caller may free its copies after giving them to 
     libshout. May return * SHOUTERR_MALLOC */"""
@@ -398,13 +401,13 @@ cdef class Shout:
    
     property charset:
         """Charset to use for metadata encoding"""
-        def __get__(Shout self):
+        def __get__(self):
             return self.__charset
         
-        def __set__(Shout self, charset):
+        def __set__(self, charset):
             try:
                 codecs.lookup(charset)
-            except (codecs.LookupError):
+            except (LookupError):
                 raise ShoutException(-50, 'Invalid charset')
             self.__charset = charset
             

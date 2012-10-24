@@ -391,9 +391,12 @@ cdef class Shout:
             self.__metadata.clear()
             for key, value in meta.items():
                 if isinstance(value, unicode):
-                    value = (value.encode(self.charset)
-                             .decode('latin1', 'ignore')
-                             .encode(self.charset)) # Fuck you devs
+                    if self.format == SHOUT_FORMAT_MP3 and key == 'song':
+                        value = (value.encode('utf-8')
+                                 .decode('latin1', 'ignore')
+                                 .encode('utf-8')) # Fuck you devs
+                    else:
+                        value = value.encode(self.charset)
                 self.__metadata[key] = value
             if not 'charset' in self.__metadata:
                 self.__metadata['charset'] = self.charset
@@ -401,7 +404,11 @@ cdef class Shout:
             shout_send_metadata(self, self.__metadata)
    
     property charset:
-        """Charset to use for metadata encoding"""
+        """Charset to use for metadata encoding
+        
+        NOTE: This is only supported on OGG streams.
+              MP3 Streams expect unicode metadata and are send as UTF8
+              to clients by using a very ugly hack."""
         def __get__(self):
             return self.__charset
         

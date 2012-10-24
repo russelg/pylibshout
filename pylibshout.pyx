@@ -1,5 +1,8 @@
 import sys
 import codecs
+import socket
+from urllib import urlencode
+from base64 import b64encode
 
 
 cdef extern from "sys/types.h":
@@ -382,22 +385,20 @@ cdef class Shout:
         def __get__(self):
             return self.__metadata
 
-        def __set__(self, dict):
-            if not 'charset' in dict:
-                dict['charset'] = self.charset
-            for key, value in dict.items():
+        def __set__(self, meta):
+            if not isinstance(meta, dict):
+                raise ShoutException(-51, "Metadata has to be a dict.")
+            self.__metadata.clear()
+            for key, value in meta.items():
+                if isinstance(value, unicode):
+                    value = (value.encode(self.charset)
+                             .decode('latin1', 'ignore')
+                             .encode(self.charset)) # Fuck you devs
                 self.__metadata[key] = value
-                if key == 'song' and isinstance(value, unicode):
-                    value = value.encode(self.charset)
-                else:
-                    value = str(value)
-                shout_metadata_add(self.shout_metadata_t, key, value)
-
-            i = shout_set_metadata(self.shout_t, self.shout_metadata_t)
-
-            i = 0
-            if i != 0:
-                raise ShoutException(i, 'Metadata is not correct')
+            if not 'charset' in self.__metadata:
+                self.__metadata['charset'] = self.charset
+            
+            shout_send_metadata(self, self.__metadata)
    
     property charset:
         """Charset to use for metadata encoding"""
@@ -458,3 +459,40 @@ cdef class Shout:
             i = shout_set_nonblocking(self.shout_t, nonblocking)
             if i != 0:
                 raise ShoutException(i, 'Nonblocking is not correct')
+
+def shout_send_metadata(instance, meta):
+    try:
+        sock = socket.create_connection((instance.host, instance.port), 5.0)
+    except socket.error:
+        raise ShoutException(-53, "Failed connecting to metadata server.")
+    
+    if instance.protocol == SHOUT_PROTOCOL_ICY:
+        request_data = ("GET /admin.cgi?mode=updinfo&pass={passw:s}&{dicts:s} "
+                        "HTTP/1.1\r\n User-Agent: {agent:s} (Mozilla "
+                        "compatible)\r\n\r\n")
+    elif instance.protocol == SHOUT_PROTOCOL_HTTP:
+        request_data = ("GET /admin/metadata?mode=updinfo&mount={mount:s}"
+                        "&{dicts:s} HTTP/1.1\r\nUser-Agent: {agent:s}\r\n"
+                        "{auth:s}\r\n")
+    else:
+        request_data = ("GET /admin.cgi?mode=updinfo&pass={passw:s}"
+                        "&mount={mount:s}&{dicts:s} HTTP/1.1\r\n"
+                        "User-Agent: {agent:s}\r\n\r\n")
+    url_part = urlencode(meta)
+    url_part = url_part.replace("+", "%20")
+    data = request_data.format(passw=instance.password,
+                               agent=instance.agent,
+                               mount=instance.mount,
+                               auth=http_basic_authorization(instance),
+                               dicts=url_part)
+    try:
+        sock.sendall(data)
+    except socket.error:
+        raise ShoutException(-52, "Failed sending metadata.")
+    finally:
+        sock.close()
+    
+    
+def http_basic_authorization(instance):
+    auth = b64encode("{:s}:{:s}".format(instance.user, instance.password))
+    return "Authorization: Basic {auth:s}\r\n".format(auth=auth)

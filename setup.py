@@ -14,11 +14,12 @@ Operating System :: OS Independent
 
 from distutils.core import setup
 from distutils.extension import Extension
+from Cython.Distutils import build_ext
 
 doclines = __doc__.split("\n")
 
 ext_modules = [Extension(
-    "pylibshout", ["pylibshout.c"],
+    "pylibshout", ["pylibshout.pyx"],
     libraries = ['shout'] #.h files
 )]
 
@@ -34,5 +35,6 @@ setup(
     long_description = "\n".join(doclines[2:]),
     #py_modules = ['pylibshout'],
     ext_modules = ext_modules,
+    cmdclass = {'build_ext': build_ext},
     requires = ['Cython']
 )

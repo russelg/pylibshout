@@ -23,7 +23,7 @@ cdef extern from "shout/shout.h":
     char *shout_get_error(shout_t *self)
     int shout_get_errno(shout_t *self)
     int shout_get_connected(shout_t *self)
-    
+
     int shout_open(shout_t *self)
     int shout_close(shout_t *self)
     int shout_send(shout_t *self, unsigned char *data, size_t len) nogil
@@ -114,8 +114,8 @@ SHOUT_AI_CHANNELS = 'channels'
 SHOUT_AI_QUALITY = 'quality'
 
 def version():
-    """returns a static version string.  Non-null parameters will be set 
-    to theAttributeError: 'PropertyScope' object has no attribute 
+    """returns a static version string.  Non-null parameters will be set
+    to theAttributeError: 'PropertyScope' object has no attribute
     'namespace_cname'"""
     cdef int *major
     cdef int *minor
@@ -126,25 +126,26 @@ class ShoutException(Exception):
     pass
 
 cdef class Shout:
-    """Allocates and sets up a new shout_t.  Returns NULL if it can't get 
-    enough * memory.  The returns shout_t must be disposed of 
+    """Allocates and sets up a new shout_t.  Returns NULL if it can't get
+    enough * memory.  The returns shout_t must be disposed of
     with shout_free."""
     cdef shout_t *shout_t
     cdef shout_metadata_t *shout_metadata_t
     cdef str __charset
     cdef dict __metadata
     cdef dict __audio_info
-    
-    def __init__(self):
+
+    def __init__(self, tag_fix=True):
         """initializes the shout library. Must be called before anything else"""
         shout_init()
         self.shout_t = shout_new()
         self.shout_metadata_t = shout_metadata_new()
-        
+
         self.__metadata = dict()
         self.__audio_info = dict()
         self.__charset = 'utf-8'
-        
+        self.__tag_fix = tag_fix
+
     def open(self):
         """shout_open (no switching back and forth midstream at the moment)."""
         i = shout_open(self.shout_t)
@@ -158,10 +159,10 @@ cdef class Shout:
         if i < 0:
             raise ShoutException(self.get_errno(), self.get_error())
         return i
-    
+
     def send_raw(self, data):
-        """Send unparsed data to the server.  Do not use this unless you 
-        know what you are doing. 
+        """Send unparsed data to the server.  Do not use this unless you
+        know what you are doing.
         Returns the number of bytes written, or < 0 on error."""
         length = len(data)
         with nogil:
@@ -169,9 +170,9 @@ cdef class Shout:
         if i < 0:
             raise ShoutException(self.get_errno(), self.get_error())
         return i
-    
+
     def queuelen(self):
-        """return the number of bytes currently on the write queue (only 
+        """return the number of bytes currently on the write queue (only
         makes sense in nonblocking mode)"""
         i = shout_queuelen(self.shout_t)
         if i < 0:
@@ -195,12 +196,12 @@ cdef class Shout:
 
     def get_error(self):
         """Returns a statically allocated string describing the last shout error
-         * to occur.  Only valid until the next libshout call on this 
+         * to occur.  Only valid until the next libshout call on this
         shout_t"""
         return shout_get_error(self.shout_t)
 
     def get_errno(self):
-        """Return the error code (e.g. SHOUTERR_SOCKET) for this shout 
+        """Return the error code (e.g. SHOUTERR_SOCKET) for this shout
         instance"""
         return shout_get_errno(self.shout_t)
 
@@ -211,9 +212,9 @@ cdef class Shout:
     def __dealloc__(self):
         shout_free(self.shout_t)
         shout_metadata_free(self.shout_metadata_t)
-        
-    """Parameter manipulation functions.  libshout makes copies of all 
-    parameters, the caller may free its copies after giving them to 
+
+    """Parameter manipulation functions.  libshout makes copies of all
+    parameters, the caller may free its copies after giving them to
     libshout. May return * SHOUTERR_MALLOC */"""
     property host:
         "A doc string can go here."
@@ -374,7 +375,7 @@ cdef class Shout:
                 raise ShoutException(i, 'Audio info is not correct')
 
     property metadata:
-        """Sets MP3 metadata. Only key is now 'song' :S 
+        """Sets MP3 metadata. Only key is now 'song' :S
         Returns:
             SHOUTERR_SUCCESS
             SHOUTERR_UNSUPPORTED if format isn't MP3
@@ -391,7 +392,8 @@ cdef class Shout:
             self.__metadata.clear()
             for key, value in meta.items():
                 if isinstance(value, unicode):
-                    if self.format == SHOUT_FORMAT_MP3 and key == 'song':
+                    if (self.format == SHOUT_FORMAT_MP3 and key == 'song' and \
+                            self.__tag_fix):
                         value = (value.encode('utf-8')
                                  .decode('latin1', 'ignore')
                                  .encode('utf-8')) # Fuck you devs
@@ -400,25 +402,25 @@ cdef class Shout:
                 self.__metadata[key] = value
             if not 'charset' in self.__metadata:
                 self.__metadata['charset'] = self.charset
-            
+
             shout_send_metadata(self, self.__metadata)
-   
+
     property charset:
         """Charset to use for metadata encoding
-        
+
         NOTE: This is only supported on OGG streams.
               MP3 Streams expect unicode metadata and are send as UTF8
               to clients by using a very ugly hack."""
         def __get__(self):
             return self.__charset
-        
+
         def __set__(self, charset):
             try:
                 codecs.lookup(charset)
             except (LookupError):
                 raise ShoutException(-50, 'Invalid charset')
             self.__charset = charset
-            
+
     property public:
         "A doc string can go here."
 
@@ -472,7 +474,7 @@ def shout_send_metadata(instance, meta):
         sock = socket.create_connection((instance.host, instance.port), 5.0)
     except socket.error:
         raise ShoutException(-53, "Failed connecting to metadata server.")
-    
+
     if instance.protocol == SHOUT_PROTOCOL_ICY:
         request_data = ("GET /admin.cgi?mode=updinfo&pass={passw:s}&{dicts:s} "
                         "HTTP/1.1\r\n User-Agent: {agent:s} (Mozilla "
@@ -498,8 +500,8 @@ def shout_send_metadata(instance, meta):
         raise ShoutException(-52, "Failed sending metadata.")
     finally:
         sock.close()
-    
-    
+
+
 def http_basic_authorization(instance):
     auth = b64encode("{:s}:{:s}".format(instance.user, instance.password))
     return "Authorization: Basic {auth:s}\r\n".format(auth=auth)

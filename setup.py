@@ -15,6 +15,8 @@ Operating System :: OS Independent
 from distutils.core import setup
 from distutils.extension import Extension
 
+VERSION = '1.0.0'
+
 try:
     from Cython.Distutils import build_ext
 except ImportError:
@@ -32,7 +34,7 @@ if have_cython:
 
     setup(
         name = 'pylibshout',
-        version = '0.0.1',
+        version = VERSION,
         author = 'Leon Bogaert',
         author_email = 'leon@vanutsteen.nl',
         url = 'http://github.com/LeonB/pylibshout',
@@ -52,7 +54,7 @@ else:
                             
     setup(
         name = 'pylibshout',
-        version = '0.0.1',
+        version = VERSION,
         author = 'Leon Bogaert',
         author_email = 'leon@vanutsteen.nl',
         url = 'http://github.com/LeonB/pylibshout',

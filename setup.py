@@ -14,27 +14,52 @@ Operating System :: OS Independent
 
 from distutils.core import setup
 from distutils.extension import Extension
-from Cython.Distutils import build_ext
+
+try:
+    from Cython.Distutils import build_ext
+except ImportError:
+    have_cython = False
+else:
+    have_cython = True
 
 doclines = __doc__.split("\n")
 
-ext_modules = [Extension(
-    "pylibshout", ["pylibshout.pyx"],
-    libraries = ['shout'] #.h files
-)]
+if have_cython:
+    ext_modules = [Extension(
+        "pylibshout", ["pylibshout.pyx"],
+        libraries = ['shout'] #.h files
+    )]
 
-setup(
-    name = 'pylibshout',
-    version = '0.0.1',
-    author = 'Leon Bogaert',
-    author_email = 'leon@vanutsteen.nl',
-    url = 'http://github.com/LeonB/pylibshout',
-    platforms = ["any"],
-    description = doclines[0],
-    classifiers = filter(None, classifiers.split("\n")),
-    long_description = "\n".join(doclines[2:]),
-    #py_modules = ['pylibshout'],
-    ext_modules = ext_modules,
-    cmdclass = {'build_ext': build_ext},
-    requires = ['Cython']
-)
+    setup(
+        name = 'pylibshout',
+        version = '0.0.1',
+        author = 'Leon Bogaert',
+        author_email = 'leon@vanutsteen.nl',
+        url = 'http://github.com/LeonB/pylibshout',
+        platforms = ["any"],
+        description = doclines[0],
+        classifiers = filter(None, classifiers.split("\n")),
+        long_description = "\n".join(doclines[2:]),
+        #py_modules = ['pylibshout'],
+        ext_modules = ext_modules,
+        cmdclass = {'build_ext': build_ext},
+        requires = ['Cython']
+    )
+else:
+    ext_modules = [Extension("pylibshout",
+                            ["pylibshout.c"],
+                            libraries=["shout"])]
+                            
+    setup(
+        name = 'pylibshout',
+        version = '0.0.1',
+        author = 'Leon Bogaert',
+        author_email = 'leon@vanutsteen.nl',
+        url = 'http://github.com/LeonB/pylibshout',
+        platforms = ["any"],
+        description = doclines[0],
+        classifiers = filter(None, classifiers.split("\n")),
+        long_description = "\n".join(doclines[2:]),
+        #py_modules = ['pylibshout'],
+        ext_modules = ext_modules
+    )

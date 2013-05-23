@@ -1,3 +1,4 @@
+from cpython cimport bool
 import sys
 import codecs
 import socket

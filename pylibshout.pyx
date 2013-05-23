@@ -361,8 +361,7 @@ cdef class Shout:
             return self.__audio_info
 
         def __set__(self, dict):
-            #get the current module
-            pylibshout = globals()['pylibshout']
+            import pylibshout
 
             for key, value in dict.items():
                 const = 'SHOUT_AI_%s' % key.upper()

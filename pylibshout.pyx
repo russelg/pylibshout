@@ -134,6 +134,7 @@ cdef class Shout:
     cdef str __charset
     cdef dict __metadata
     cdef dict __audio_info
+    cdef bool __tag_fix
 
     def __init__(self, tag_fix=True):
         """initializes the shout library. Must be called before anything else"""

@@ -154,19 +154,23 @@ cdef class Shout:
         if i != 0:
             raise ShoutException(self.get_errno(), self.get_error())
 
-    def send(self, unsigned char * data):
-        cdef int length = len(data)
+    def send(self, data):
+        return self.csend(data, len(data))
+
+    def csend(self, unsigned char * data, int length):
         with nogil:
             i = shout_send(self.shout_t, data, length)
         if i < 0:
             raise ShoutException(self.get_errno(), self.get_error())
         return i
 
-    def send_raw(self, unsigned char * data):
+    def send_raw(self, data):
+        return self.csend_raw(data, len(data))
+
+    def csend_raw(self, unsigned char * data, int length):
         """Send unparsed data to the server.  Do not use this unless you
         know what you are doing.
         Returns the number of bytes written, or < 0 on error."""
-        cdef int length = len(data)
         with nogil:
             i = shout_send_raw(self.shout_t, data, length)
         if i < 0:

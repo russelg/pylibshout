@@ -123,6 +123,11 @@ def version():
     cdef int *patch
     return shout_version(major, minor, patch)
 
+def shutdown():
+   """Shut down pylibshout and free all resources. Any existing Shout instances
+   should not be used after this."""
+   shout_shutdown()
+
 class ShoutException(Exception):
     pass
 

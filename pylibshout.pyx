@@ -118,10 +118,7 @@ def version():
     """returns a static version string.  Non-null parameters will be set
     to theAttributeError: 'PropertyScope' object has no attribute
     'namespace_cname'"""
-    cdef int *major
-    cdef int *minor
-    cdef int *patch
-    return shout_version(major, minor, patch)
+    return shout_version(NULL, NULL, NULL)
 
 def shutdown():
    """Shut down pylibshout and free all resources. Any existing Shout instances

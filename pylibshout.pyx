@@ -434,7 +434,7 @@ cdef class Shout:
 
         def __set__(self, public):
             public = bool(public)
-            i = shout_set_dumpfile(self.shout_t, public)
+            i = shout_set_public(self.shout_t, public)
             if i != 0:
                 raise ShoutException(i, 'Public is not correct')
 

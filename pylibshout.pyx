@@ -2,7 +2,7 @@ from cpython cimport bool
 import sys
 import codecs
 import socket
-from urllib import urlencode
+from urllib.parse import urlencode
 from base64 import b64encode
 
 
@@ -225,23 +225,23 @@ cdef class Shout:
     parameters, the caller may free its copies after giving them to
     libshout. May return * SHOUTERR_MALLOC */"""
     property host:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
-            "Defaults to localhost"
+            """Defaults to localhost"""
             return shout_get_host(self.shout_t)
 
         def __set__(self, host):
-            host = str(host)
+            host = str.encode(host)
             i = shout_set_host(self.shout_t, host)
             if i != 0:
                 raise ShoutException(i, 'Host is not correct')
 
     property port:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
-            "Defaults to 8000"
+            """Defaults to 8000"""
             return shout_get_port(self.shout_t)
 
         def __set__(self, port):
@@ -251,117 +251,117 @@ cdef class Shout:
                 raise ShoutException(i, 'Port is not correct')
 
     property user:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_user(self.shout_t)
 
         def __set__(self, user):
-            user = str(user)
+            user = str.encode(user)
             i = shout_set_user(self.shout_t, user)
             if i != 0:
                 raise ShoutException(i, 'User is not correct')
 
     property password:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
-            "Defaults to 8000"
+            """Defaults to 8000"""
             return shout_get_password(self.shout_t)
 
         def __set__(self, password):
-            password = str(password)
+            password = str.encode(password)
             i = shout_set_password(self.shout_t, password)
             if i != 0:
                 raise ShoutException(i, 'password is not correct')
 
     property mount:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
-            "Defaults to 8000"
+            """Defaults to 8000"""
             return shout_get_mount(self.shout_t)
 
         def __set__(self, mount):
-            mount = str(mount)
+            mount = str.encode(mount)
             i = shout_set_mount(self.shout_t, mount)
             if i != 0:
                 raise ShoutException(i, 'mount is not correct')
 
     property name:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_name(self.shout_t)
 
         def __set__(self, name):
-            name = str(name)
+            name = str.encode(name)
             i = shout_set_name(self.shout_t, name)
             if i != 0:
                 raise ShoutException(i, 'name is not correct')
 
     property url:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_url(self.shout_t)
 
         def __set__(self, url):
-            url = str(url)
+            url = str.encode(url)
             i = shout_set_url(self.shout_t, url)
             if i != 0:
                 raise ShoutException(i, 'url is not correct')
 
     property genre:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_genre(self.shout_t)
 
         def __set__(self, genre):
-            genre = str(genre)
+            genre = str.encode(genre)
             i = shout_set_genre(self.shout_t, genre)
             if i != 0:
                 raise ShoutException(i, 'genre is not correct')
 
     property agent:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_agent(self.shout_t)
 
         def __set__(self, agent):
-            agent = str(agent)
+            agent = str.encode(agent)
             i = shout_set_agent(self.shout_t, agent)
             if i != 0:
                 raise ShoutException(i, 'Agent is not correct')
 
     property description:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_agent(self.shout_t)
 
         def __set__(self, description):
-            description = str(description)
+            description = str.encode(description)
             i = shout_set_description(self.shout_t, description)
             if i != 0:
                 raise ShoutException(i, 'Description is not correct')
 
     property dumpfile:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_dumpfile(self.shout_t)
 
         def __set__(self, dumpfile):
-            dumpfile = str(dumpfile)
+            dumpfile = str.encode(dumpfile)
             i = shout_set_dumpfile(self.shout_t, dumpfile)
             if i != 0:
                 raise ShoutException(i, 'Dumpfile is not correct')
 
     property audio_info:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return self.__audio_info
@@ -372,7 +372,11 @@ cdef class Shout:
             for key, value in dict.items():
                 const = 'SHOUT_AI_%s' % key.upper()
                 if hasattr(pylibshout, const):
-                    value = str(value)
+                    key = str.encode(key)
+                    if isinstance(value, str):
+                        value = str.encode(value)
+                    else:
+                        value = bytes(value)
                     i = shout_set_audio_info(self.shout_t, key, value)
                     self.__audio_info[key] = value
                 else:
@@ -429,7 +433,7 @@ cdef class Shout:
             self.__charset = charset
 
     property public:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_public(self.shout_t)
@@ -441,7 +445,7 @@ cdef class Shout:
                 raise ShoutException(i, 'Public is not correct')
 
     property format:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_format(self.shout_t)
@@ -465,7 +469,7 @@ cdef class Shout:
                 raise ShoutException(i, 'Protocol is not correct')
 
     property nonblocking:
-        "A doc string can go here."
+        """A doc string can go here."""
 
         def __get__(self):
             return shout_get_nonblocking(self.shout_t)

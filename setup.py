@@ -29,39 +29,39 @@ doclines = __doc__.split("\n")
 if have_cython:
     ext_modules = [Extension(
         "pylibshout", ["pylibshout.pyx"],
-        libraries = ['shout'] #.h files
+        libraries=['shout']  # .h files
     )]
 
     setup(
-        name = 'pylibshout',
-        version = VERSION,
-        author = 'Leon Bogaert',
-        author_email = 'leon@vanutsteen.nl',
-        url = 'http://github.com/LeonB/pylibshout',
-        platforms = ["any"],
-        description = doclines[0],
-        classifiers = filter(None, classifiers.split("\n")),
-        long_description = "\n".join(doclines[2:]),
-        #py_modules = ['pylibshout'],
-        ext_modules = ext_modules,
-        cmdclass = {'build_ext': build_ext},
-        requires = ['Cython']
+        name='pylibshout',
+        version=VERSION,
+        author='Leon Bogaert',
+        author_email='leon@vanutsteen.nl',
+        url='http://github.com/LeonB/pylibshout',
+        platforms=["any"],
+        description=doclines[0],
+        classifiers=filter(None, classifiers.split("\n")),
+        long_description="\n".join(doclines[2:]),
+        # py_modules = ['pylibshout'],
+        ext_modules=ext_modules,
+        cmdclass={'build_ext': build_ext},
+        requires=['Cython']
     )
 else:
     ext_modules = [Extension("pylibshout",
-                            ["pylibshout.c"],
-                            libraries=["shout"])]
-                            
+                             ["pylibshout.c"],
+                             libraries=["shout"])]
+
     setup(
-        name = 'pylibshout',
-        version = VERSION,
-        author = 'Leon Bogaert',
-        author_email = 'leon@vanutsteen.nl',
-        url = 'http://github.com/LeonB/pylibshout',
-        platforms = ["any"],
-        description = doclines[0],
-        classifiers = filter(None, classifiers.split("\n")),
-        long_description = "\n".join(doclines[2:]),
-        #py_modules = ['pylibshout'],
-        ext_modules = ext_modules
+        name='pylibshout',
+        version=VERSION,
+        author='Leon Bogaert',
+        author_email='leon@vanutsteen.nl',
+        url='http://github.com/LeonB/pylibshout',
+        platforms=["any"],
+        description=doclines[0],
+        classifiers=filter(None, classifiers.split("\n")),
+        long_description="\n".join(doclines[2:]),
+        # py_modules = ['pylibshout'],
+        ext_modules=ext_modules
     )

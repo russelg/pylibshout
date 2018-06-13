@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+
 sys.path.append('./')
 
 # usage: ./example.py /path/to/file1 /path/to/file2 ...
@@ -9,7 +10,8 @@ import string
 import time
 
 s = pylibshout.Shout()
-print "Using libshout version %s" % pylibshout.version()
+print
+"Using libshout version %s" % pylibshout.version()
 
 s.host = 'localhost'
 # s.port = 8000
@@ -26,7 +28,7 @@ s.protocol = pylibshout.SHOUT_PROTOCOL_HTTP
 s.name = 'mine'
 s.description = 'My mount'
 s.genre = 'Rock \'n Roll'
-s.url = 'beethoven.ogg' #??
+s.url = 'beethoven.ogg'  # ??
 # s.public = 0 | 1
 # s.audio_info = { 'key': 'val', ... }
 #  (keys are shout.SHOUT_AI_BITRATE, shout.SHOUT_AI_SAMPLERATE,
@@ -38,7 +40,8 @@ s.open()
 total = 0
 st = time.time()
 for fa in sys.argv[1:]:
-    print "opening file %s" % fa
+    print
+    "opening file %s" % fa
     f = open(fa)
     s.metadata = {'song': fa}
 
@@ -52,9 +55,11 @@ for fa in sys.argv[1:]:
         s.send(buf)
         s.sync()
     f.close()
-    
-    et = time.time()
-    br = total*0.008/(et-st)
-    print "Sent %d bytes in %d seconds (%f kbps)" % (total, et-st, br)
 
-print s.close()
+    et = time.time()
+    br = total * 0.008 / (et - st)
+    print
+    "Sent %d bytes in %d seconds (%f kbps)" % (total, et - st, br)
+
+print
+s.close()

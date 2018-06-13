@@ -11,13 +11,13 @@ sys.argv = argv
 
 ext_modules = [Extension(
     "pylibshout", ["pylibshout.pyx"],
-    libraries = ['shout'] #.h files
+    libraries=['shout']  # .h files
 )]
 
 setup(
-    cmdclass = {'build_ext': build_ext},
-    ext_modules = ext_modules,
+    cmdclass={'build_ext': build_ext},
+    ext_modules=ext_modules,
 )
 
-#build it: python setup.py build_ext --inplace
-#create distribution: python setup.py sdist
+# build it: python setup.py build_ext --inplace
+# create distribution: python setup.py sdist

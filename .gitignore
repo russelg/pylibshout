@@ -1,4 +1,4 @@
 build/
-pylibshout.so
+pylibshout*.so
 .swp
 dist/

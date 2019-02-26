@@ -2,9 +2,6 @@
 
 Based on the c-libary libshout 2 and built with Cython
 """
-from distutils.extension import Extension
-from distutils.core import setup
-
 
 classifiers = """\
 Development Status :: 3 - Alpha
@@ -14,6 +11,9 @@ Topic :: Software Development :: Libraries :: Python Modules
 Topic :: Multimedia :: Sound/Audio
 Operating System :: OS Independent
 """
+
+from distutils.extension import Extension
+from distutils.core import setup
 
 
 VERSION = '1.0.0'
@@ -30,8 +30,6 @@ doclines = __doc__.split("\n")
 if have_cython:
     ext_modules = [Extension(
         "pylibshout", ["pylibshout.pyx"],
-        include_dirs=['/usr/local/Cellar/libshout/2.4.1/include/'],
-        library_dirs=['/usr/local/Cellar/libshout/2.4.1/lib/'],
         libraries=['shout']  # .h files
     )]
 

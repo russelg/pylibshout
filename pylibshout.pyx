@@ -500,13 +500,13 @@ def shout_send_metadata(instance, meta):
                         "User-Agent: {agent:s}\r\n\r\n")
     url_part = urlencode(meta)
     url_part = url_part.replace("+", "%20")
-    data = request_data.format(passw=instance.password,
-                               agent=instance.agent,
-                               mount=instance.mount,
-                               auth=http_basic_authorization(instance),
+    data = request_data.format(passw=instance.password.decode('utf-8'),
+                               agent=instance.agent.decode('utf-8'),
+                               mount=instance.mount.decode('utf-8'),
+                               auth=str(http_basic_authorization(instance)),
                                dicts=url_part)
     try:
-        sock.sendall(data)
+        sock.sendall(data.encode('utf-8'))
     except socket.error:
         raise ShoutException(-52, "Failed sending metadata.")
     finally:
@@ -514,5 +514,5 @@ def shout_send_metadata(instance, meta):
 
 
 def http_basic_authorization(instance):
-    auth = b64encode("{:s}:{:s}".format(instance.user, instance.password))
-    return "Authorization: Basic {auth:s}\r\n".format(auth=auth)
+    auth = b64encode(("{:s}:{:s}".format(instance.user.decode('utf-8'), instance.password.decode('utf-8'))).encode('utf-8'))
+    return "Authorization: Basic {auth:s}\r\n".format(auth=str(auth.decode('utf-8')))
